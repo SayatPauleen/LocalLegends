@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/auth_provider.dart';
-import 'home_placeholder.dart';
+import 'home_shell.dart';
 import 'login_screen.dart';
 
 /// Shows the right screen for the current session, so no screen has to
@@ -17,7 +17,7 @@ class AuthGate extends StatelessWidget {
       case AuthStatus.unknown:
         return const Scaffold(body: Center(child: CircularProgressIndicator()));
       case AuthStatus.authenticated:
-        return const HomePlaceholder();
+        return const HomeShell();
       case AuthStatus.unauthenticated:
         return const LoginScreen();
     }
