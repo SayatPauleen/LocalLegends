@@ -15,13 +15,13 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _email = TextEditingController();
+  final _username = TextEditingController();
   final _password = TextEditingController();
   bool _hidePassword = true;
 
   @override
   void dispose() {
-    _email.dispose();
+    _username.dispose();
     _password.dispose();
     super.dispose();
   }
@@ -29,22 +29,22 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     // On success, AuthGate switches screens by itself.
-    await context.read<AuthProvider>().signIn(_email.text, _password.text);
+    await context.read<AuthProvider>().signIn(_username.text, _password.text);
   }
 
   Future<void> _forgotPassword() async {
     final messenger = ScaffoldMessenger.of(context);
-    if (Validators.email(_email.text) != null) {
+    if (Validators.username(_username.text) != null) {
       messenger.showSnackBar(const SnackBar(
-        content: Text('Enter your email first, then tap Forgot password.'),
+        content: Text('Enter your username first, then tap Forgot password.'),
       ));
       return;
     }
     final auth = context.read<AuthProvider>();
-    final ok = await auth.sendPasswordReset(_email.text);
+    final ok = await auth.sendPasswordReset(_username.text);
     messenger.showSnackBar(SnackBar(
       content: Text(ok
-          ? 'Reset link sent. Check your inbox.'
+          ? 'Reset link sent to the email on this account.'
           : auth.errorMessage ?? 'Could not send reset link.'),
     ));
   }
@@ -74,17 +74,20 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 6),
                     const Text(
-                      'Log in to find the hidden gems in your neighborhood.',
+                      'Log in with your username to find the hidden gems in your neighborhood.',
                       style: TextStyle(color: AppColors.muted, fontSize: 15),
                     ),
                     const SizedBox(height: 28),
                     TextFormField(
-                      controller: _email,
-                      keyboardType: TextInputType.emailAddress,
-                      autofillHints: const [AutofillHints.email],
+                      controller: _username,
+                      autocorrect: false,
+                      autofillHints: const [AutofillHints.username],
                       textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(labelText: 'Email'),
-                      validator: Validators.email,
+                      decoration: const InputDecoration(
+                        labelText: 'Username',
+                        prefixText: '@',
+                      ),
+                      validator: Validators.username,
                       onChanged: (_) => auth.clearError(),
                     ),
                     const SizedBox(height: 16),
