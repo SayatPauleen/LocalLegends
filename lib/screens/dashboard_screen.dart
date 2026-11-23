@@ -5,15 +5,16 @@ import '../theme/app_theme.dart';
 import '../widgets/story_card.dart';
 
 /// Tab indexes in HomeShell, so the dashboard can jump to other tabs.
+/// Revision 2 tabs: Home, Explore, Missions, Collections, Profile.
 class HomeTabs {
-  static const discover = 0;
-  static const map = 1;
+  static const home = 0;
+  static const explore = 1;
   static const missions = 2;
-  static const postStory = 3;
-  static const support = 4;
+  static const collections = 3;
+  static const profile = 4;
 }
 
-/// The Discover dashboard: greeting, stats, today's Mystery Mission,
+/// The Home dashboard: greeting, stats, today's Mystery Mission,
 /// a map preview, and the story feed.
 ///
 /// It takes plain values instead of reading AuthProvider, so it can be
@@ -73,13 +74,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           _Header(
             greeting: _greeting,
             userName: widget.userName,
-            onProfile: () => _comingSoon('Your profile'),
+            onProfile: () => widget.onOpenTab(HomeTabs.profile),
             onSignOut: widget.onSignOut,
           ),
           const SizedBox(height: 16),
           TextField(
             readOnly: true,
-            onTap: () => _comingSoon('Search'),
+            onTap: () => widget.onOpenTab(HomeTabs.explore),
             decoration: const InputDecoration(
               hintText: 'Search places, food, or tags',
               prefixIcon: Icon(Icons.search),
@@ -125,11 +126,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 24),
           _SectionTitle(
             title: 'Gems around you',
-            action: 'Open map',
-            onAction: () => widget.onOpenTab(HomeTabs.map),
+            action: 'Explore',
+            onAction: () => widget.onOpenTab(HomeTabs.explore),
           ),
           const SizedBox(height: 10),
-          _MapPreview(onTap: () => widget.onOpenTab(HomeTabs.map)),
+          _MapPreview(onTap: () => widget.onOpenTab(HomeTabs.explore)),
           const SizedBox(height: 24),
           const _SectionTitle(title: 'Stories near you'),
           const SizedBox(height: 10),

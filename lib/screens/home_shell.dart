@@ -4,10 +4,14 @@ import 'package:provider/provider.dart';
 import '../data/sample_dashboard_repository.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
+import 'collections_screen.dart';
 import 'dashboard_screen.dart';
+import 'explore_screen.dart';
+import 'missions_screen.dart';
+import 'profile_screen.dart';
 
-/// The logged-in app: bottom navigation with the five tabs from the mockup.
-/// Only Discover (the dashboard) is built so far; the others are stubs.
+/// The logged-in app: bottom navigation with the five revision-2 tabs:
+/// Home (Dashboard), Explore, Missions, Collections, Profile.
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
 
@@ -16,7 +20,7 @@ class HomeShell extends StatefulWidget {
 }
 
 class _HomeShellState extends State<HomeShell> {
-  int _index = HomeTabs.discover;
+  int _index = HomeTabs.home;
   final _data = SampleDashboardRepository().load();
 
   void _openTab(int index) => setState(() => _index = index);
@@ -25,10 +29,9 @@ class _HomeShellState extends State<HomeShell> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final displayName = auth.user?.displayName;
-    final emailName = auth.user?.email?.split('@').first;
     final userName = (displayName != null && displayName.trim().isNotEmpty)
         ? displayName.trim().split(' ').first
-        : (emailName ?? 'Explorer');
+        : (auth.username ?? 'Explorer');
 
     final pages = <Widget>[
       DashboardScreen(
@@ -37,10 +40,10 @@ class _HomeShellState extends State<HomeShell> {
         onSignOut: auth.signOut,
         onOpenTab: _openTab,
       ),
-      const _ComingSoonTab(title: 'Map', featureId: 'F-04', icon: Icons.map_outlined),
-      const _ComingSoonTab(title: 'Mystery Missions', featureId: 'F-07', icon: Icons.flag_outlined),
-      const _ComingSoonTab(title: 'Post a story', featureId: 'F-03', icon: Icons.edit_note),
-      const _ComingSoonTab(title: 'Support history', featureId: 'F-10', icon: Icons.volunteer_activism_outlined),
+      const ExploreScreen(),
+      const MissionsScreen(),
+      const CollectionsScreen(),
+      const ProfileScreen(),
     ];
 
     return Scaffold(
@@ -52,14 +55,14 @@ class _HomeShellState extends State<HomeShell> {
         indicatorColor: AppColors.terracotta.withValues(alpha: 0.15),
         destinations: const [
           NavigationDestination(
-            icon: Icon(Icons.explore_outlined),
-            selectedIcon: Icon(Icons.explore, color: AppColors.terracotta),
-            label: 'Discover',
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home, color: AppColors.terracotta),
+            label: 'Home',
           ),
           NavigationDestination(
-            icon: Icon(Icons.map_outlined),
-            selectedIcon: Icon(Icons.map, color: AppColors.terracotta),
-            label: 'Map',
+            icon: Icon(Icons.explore_outlined),
+            selectedIcon: Icon(Icons.explore, color: AppColors.terracotta),
+            label: 'Explore',
           ),
           NavigationDestination(
             icon: Icon(Icons.flag_outlined),
@@ -67,51 +70,16 @@ class _HomeShellState extends State<HomeShell> {
             label: 'Missions',
           ),
           NavigationDestination(
-            icon: Icon(Icons.add_circle_outline),
-            selectedIcon: Icon(Icons.add_circle, color: AppColors.terracotta),
-            label: 'Post story',
+            icon: Icon(Icons.photo_library_outlined),
+            selectedIcon: Icon(Icons.photo_library, color: AppColors.terracotta),
+            label: 'Collections',
           ),
           NavigationDestination(
-            icon: Icon(Icons.volunteer_activism_outlined),
-            selectedIcon: Icon(Icons.volunteer_activism, color: AppColors.terracotta),
-            label: 'Support',
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person, color: AppColors.terracotta),
+            label: 'Profile',
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _ComingSoonTab extends StatelessWidget {
-  const _ComingSoonTab({required this.title, required this.featureId, required this.icon});
-
-  final String title;
-  final String featureId;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 48, color: AppColors.terracotta),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.ink),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Coming soon ($featureId)',
-                style: const TextStyle(color: AppColors.muted),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

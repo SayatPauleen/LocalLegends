@@ -2,6 +2,20 @@
 /// Each returns null when valid, or an error message when invalid.
 class Validators {
   static final _emailPattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+  static final _usernamePattern = RegExp(r'^[a-z0-9_]{3,20}$');
+
+  /// 3 to 20 characters: letters, numbers, underscore. A leading @ is
+  /// ignored and capitals are lower-cased before checking.
+  static String? username(String? value) {
+    if (value == null || value.trim().isEmpty) return 'Enter a username.';
+    final handle = value.trim().replaceFirst(RegExp(r'^@'), '').toLowerCase();
+    if (handle.length < 3) return 'Username must be at least 3 characters.';
+    if (handle.length > 20) return 'Username can be at most 20 characters.';
+    if (!_usernamePattern.hasMatch(handle)) {
+      return 'Use only letters, numbers, and underscores.';
+    }
+    return null;
+  }
 
   static String? name(String? value) {
     if (value == null || value.trim().isEmpty) return 'Enter your name.';
