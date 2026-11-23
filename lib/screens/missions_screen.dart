@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/app_models.dart';
+import '../models/dashboard_models.dart';
 import '../providers/content_provider.dart';
+import '../providers/tab_navigator.dart';
 import '../theme/app_theme.dart';
+import '../widgets/place_picker.dart';
+import '../widgets/reward_dialog.dart';
+import 'write_story_screen.dart';
 
 const badgeIcons = <String, IconData>{
   'story': Icons.auto_stories_outlined,
@@ -26,10 +31,23 @@ class MissionsScreen extends StatefulWidget {
 class _MissionsScreenState extends State<MissionsScreen> {
   MissionPeriod _period = MissionPeriod.daily;
 
-  void _comingSoon(String what) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text('$what is coming soon.')));
+  /// Each mission's button takes you to where you can do it.
+  void _goDo(Mission m) {
+    final nav = context.read<TabNavigator>();
+    switch (m.id) {
+      case 'd1':
+        nav.openExplore(category: GemCategory.streetFood);
+      case 'd2':
+        WriteStoryScreen.open(context);
+      case 'd3':
+        nav.openExplore();
+      case 'w1':
+        nav.openExplore(category: GemCategory.smallBusiness);
+      case 'w2':
+        nav.open(HomeTabs.collections);
+      default:
+        showMessage(context, 'Finish any daily missions to fill this one.');
+    }
   }
 
   @override
@@ -92,7 +110,13 @@ class _MissionsScreenState extends State<MissionsScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          _MysteryCard(onReveal: () => _comingSoon('Mystery Missions')),
+          _MysteryCard(
+            clue: content.currentClue?.clue,
+            accepted: content.mysteryAccepted,
+            doneToday: content.mysteryDoneToday,
+            onReveal: content.acceptMystery,
+            onFound: () => finishMysteryMission(context),
+          ),
           const SizedBox(height: 16),
           Text(
             _period == MissionPeriod.daily ? 'Today · resets at midnight' : 'This week · resets Monday',
@@ -102,7 +126,7 @@ class _MissionsScreenState extends State<MissionsScreen> {
           for (final m in missions)
             Padding(
               padding: const EdgeInsets.only(bottom: 10),
-              child: _MissionTile(mission: m, onStart: () => _comingSoon('Mission tracking')),
+              child: _MissionTile(mission: m, onStart: () => _goDo(m)),
             ),
           const SizedBox(height: 12),
           Text(
@@ -117,7 +141,17 @@ class _MissionsScreenState extends State<MissionsScreen> {
             mainAxisSpacing: 10,
             crossAxisSpacing: 10,
             childAspectRatio: 1,
-            children: [for (final b in content.badges) _BadgeTile(badge: b)],
+            children: [
+              for (final b in content.badges)
+                InkWell(
+                  borderRadius: BorderRadius.circular(14),
+                  onTap: () => showMessage(
+                    context,
+                    b.unlocked ? '${b.name}: unlocked!' : '${b.name}: ${b.howTo}',
+                  ),
+                  child: _BadgeTile(badge: b),
+                ),
+            ],
           ),
         ],
       ),
@@ -126,12 +160,35 @@ class _MissionsScreenState extends State<MissionsScreen> {
 }
 
 class _MysteryCard extends StatelessWidget {
-  const _MysteryCard({required this.onReveal});
+  const _MysteryCard({
+    required this.clue,
+    required this.accepted,
+    required this.doneToday,
+    required this.onReveal,
+    required this.onFound,
+  });
 
+  final String? clue;
+  final bool accepted;
+  final bool doneToday;
   final VoidCallback onReveal;
+  final VoidCallback onFound;
 
   @override
   Widget build(BuildContext context) {
+    final String subtitle;
+    final Widget action;
+    if (doneToday) {
+      subtitle = 'Solved today. A new mystery unlocks tomorrow.';
+      action = const Icon(Icons.check_circle, color: AppColors.teal);
+    } else if (accepted) {
+      subtitle = clue ?? 'Find the hidden spot.';
+      action = TextButton(onPressed: onFound, child: const Text('I found it'));
+    } else {
+      subtitle = 'A random spot nearby. Revealed when you accept. +${ContentProvider.mysteryPoints} pts';
+      action = TextButton(onPressed: onReveal, child: const Text('Reveal'));
+    }
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -149,25 +206,24 @@ class _MysteryCard extends StatelessWidget {
               color: AppColors.cream,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Text(
-              '?',
-              style: TextStyle(
+            child: Text(
+              accepted || doneToday ? '!' : '?',
+              style: const TextStyle(
                   fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.terracotta),
             ),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Mystery Mission',
+                const Text('Mystery Mission',
                     style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.ink)),
-                Text('A random spot nearby. Revealed when you accept. +80 pts',
-                    style: TextStyle(fontSize: 12, color: AppColors.muted)),
+                Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
               ],
             ),
           ),
-          TextButton(onPressed: onReveal, child: const Text('Reveal')),
+          action,
         ],
       ),
     );
@@ -245,7 +301,7 @@ class _MissionTile extends StatelessWidget {
               ),
               TextButton(
                 onPressed: done ? null : onStart,
-                child: Text(done ? 'Completed' : (mission.done > 0 ? 'Continue' : 'Start')),
+                child: Text(done ? 'Completed' : (mission.done > 0 ? 'Continue' : 'Go')),
               ),
             ],
           ),

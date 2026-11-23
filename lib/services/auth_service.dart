@@ -12,8 +12,9 @@ class UsernameException implements Exception {
 
 /// Thin wrapper around Firebase Authentication (black-box reuse).
 ///
-/// Revision 2: users log in with a USERNAME instead of an email.
-/// Firebase Auth only signs in with email, so Firestore keeps a lookup:
+/// Users log in with their USERNAME or their EMAIL.
+/// Firebase Auth only signs in with email, so for usernames Firestore
+/// keeps a lookup:
 ///   usernames/{username} -> { uid, email }
 ///   users/{uid}          -> { username, displayName, email, createdAt }
 class AuthService {
@@ -37,6 +38,18 @@ class AuthService {
   Future<bool> isUsernameAvailable(String username) async {
     final doc = await _usernameDoc(username).get();
     return !doc.exists;
+  }
+
+  /// True for "juan@mail.com", false for "juan_explores" or "@juan".
+  static bool looksLikeEmail(String value) {
+    final v = value.trim();
+    return v.indexOf('@') > 0;
+  }
+
+  /// An email is used as is; a username is looked up in Firestore.
+  Future<String> _emailFor(String usernameOrEmail) async {
+    if (looksLikeEmail(usernameOrEmail)) return usernameOrEmail.trim();
+    return _emailForUsername(usernameOrEmail);
   }
 
   Future<String> _emailForUsername(String username) async {
@@ -94,13 +107,15 @@ class AuthService {
     }
   }
 
-  Future<void> signIn({required String username, required String password}) async {
-    final email = await _emailForUsername(username);
+  /// [usernameOrEmail] can be "juan_explores", "@juan_explores" or
+  /// "juan@mail.com".
+  Future<void> signIn({required String usernameOrEmail, required String password}) async {
+    final email = await _emailFor(usernameOrEmail);
     await _auth.signInWithEmailAndPassword(email: email, password: password);
   }
 
-  Future<void> sendPasswordReset(String username) async {
-    final email = await _emailForUsername(username);
+  Future<void> sendPasswordReset(String usernameOrEmail) async {
+    final email = await _emailFor(usernameOrEmail);
     await _auth.sendPasswordResetEmail(email: email);
   }
 

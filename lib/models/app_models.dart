@@ -47,11 +47,19 @@ class Mission {
 
 /// Named MissionBadge because Flutter already has a Badge widget.
 class MissionBadge {
-  const MissionBadge({required this.name, required this.icon, this.unlocked = false});
+  const MissionBadge({
+    required this.name,
+    required this.icon,
+    this.unlocked = false,
+    this.howTo = '',
+  });
 
   final String name;
   final String icon; // key into badgeIcons in missions_screen.dart
   final bool unlocked;
+
+  /// How to unlock it, shown when the badge is tapped.
+  final String howTo;
 }
 
 enum CollectionKind { business, town, city }
@@ -97,10 +105,31 @@ class TransformationCollection {
 
 /// A story the user started but did not post. Can be continued or discarded.
 class StoryDraft {
-  const StoryDraft({required this.id, required this.placeName, required this.text, required this.savedAgo});
+  const StoryDraft({
+    required this.id,
+    required this.placeName,
+    required this.text,
+    required this.savedAgo,
+    this.placeId,
+    this.whoTheyMet = '',
+    this.whatMakesItSpecial = '',
+    this.savedAt,
+  });
 
   final String id;
   final String placeName;
   final String text;
   final String savedAgo;
+  final String? placeId;
+  final String whoTheyMet;
+  final String whatMakesItSpecial;
+  final DateTime? savedAt;
+}
+
+/// Points earned from one action, shown in the "Mission completed" dialog.
+class MissionReward {
+  const MissionReward({required this.title, required this.points});
+
+  final String title;
+  final int points;
 }

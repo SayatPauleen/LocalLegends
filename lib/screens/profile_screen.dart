@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../data/sample_dashboard_repository.dart';
 import '../models/app_models.dart';
 import '../providers/auth_provider.dart';
 import '../providers/content_provider.dart';
@@ -9,6 +8,8 @@ import '../theme/app_theme.dart';
 import '../widgets/place_tile.dart';
 import '../widgets/story_card.dart';
 import 'settings_screens.dart';
+import 'story_detail_screen.dart';
+import 'write_story_screen.dart';
 
 /// Profile tab: who you are, your stories, drafts, supported places,
 /// and Settings (Preferences, Privacy, Terms and Conditions, Log out).
@@ -29,8 +30,7 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final content = context.watch<ContentProvider>();
-    // Sample: the first two dashboard stories stand in for "my stories".
-    final myStories = SampleDashboardRepository().load().stories.take(2).toList();
+    final myStories = content.myStories;
 
     final name = auth.user?.displayName?.trim();
     final displayName = (name == null || name.isEmpty) ? 'Explorer' : name;
@@ -85,7 +85,7 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Row(
               children: [
-                _Stat(value: '${myStories.length}', label: 'Stories'),
+                _Stat(value: '${content.storiesSharedCount}', label: 'Stories'),
                 const SizedBox(width: 10),
                 _Stat(value: '${content.supportedCount}', label: 'Supported'),
                 const SizedBox(width: 10),
@@ -122,13 +122,27 @@ class ProfileScreen extends StatelessWidget {
                           ),
                       ]);
                     default:
+                      if (myStories.isEmpty) {
+                        return Column(children: [
+                          const _Empty('No stories yet. Share what makes a place special.'),
+                          FilledButton.icon(
+                            onPressed: () => WriteStoryScreen.open(context),
+                            icon: const Icon(Icons.edit_note),
+                            label: const Text('Write a Story'),
+                            style: FilledButton.styleFrom(
+                              minimumSize: const Size(0, 44),
+                              backgroundColor: AppColors.terracotta,
+                            ),
+                          ),
+                        ]);
+                      }
                       return Column(children: [
                         for (final s in myStories)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 10),
                             child: StoryCard(
                               story: s,
-                              onTap: () => _comingSoon(context, 'Full story view'),
+                              onTap: () => StoryDetailScreen.open(context, s),
                             ),
                           ),
                       ]);
@@ -274,11 +288,7 @@ class _DraftsList extends StatelessWidget {
                         style: const TextStyle(fontSize: 12, color: AppColors.muted)),
                     const Spacer(),
                     TextButton(
-                      onPressed: () => ScaffoldMessenger.of(context)
-                        ..hideCurrentSnackBar()
-                        ..showSnackBar(
-                          const SnackBar(content: Text('The story editor is coming soon.')),
-                        ),
+                      onPressed: () => WriteStoryScreen.open(context, draft: d),
                       child: const Text('Continue'),
                     ),
                     TextButton(

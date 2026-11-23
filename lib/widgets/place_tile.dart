@@ -4,10 +4,12 @@ import 'package:provider/provider.dart';
 import '../models/app_models.dart';
 import '../models/dashboard_models.dart';
 import '../providers/content_provider.dart';
+import '../screens/place_detail_screen.dart';
 import '../theme/app_theme.dart';
+import 'reward_dialog.dart';
 
 /// One place in Explore or Profile > Supported, with a Support toggle
-/// that works like a favorite.
+/// that works like a favorite. Tapping it opens the place page.
 class PlaceTile extends StatelessWidget {
   const PlaceTile({super.key, required this.place});
 
@@ -18,54 +20,64 @@ class PlaceTile extends StatelessWidget {
     final content = context.watch<ContentProvider>();
     final supported = content.isSupported(place.id);
 
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: AppColors.cream,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(place.category.icon, color: AppColors.terracotta),
+        onTap: () => PlaceDetailScreen.open(context, place),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  place.name,
-                  style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.ink),
+          child: Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: AppColors.cream,
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  '${place.category.label} · ${place.distanceKm.toStringAsFixed(1)} km · ${place.storyCount} stories',
-                  style: const TextStyle(fontSize: 12, color: AppColors.muted),
+                child: Icon(place.category.icon, color: AppColors.terracotta),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      place.name,
+                      style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.ink),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${place.category.label} · ${place.distanceKm.toStringAsFixed(1)} km · ${place.storyCount} stories',
+                      style: const TextStyle(fontSize: 12, color: AppColors.muted),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      place.blurb,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 12, color: AppColors.ink),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  place.blurb,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 12, color: AppColors.ink),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 8),
+              _SupportButton(
+                supported: supported,
+                onPressed: () async {
+                  final rewards = await content.toggleSupport(place.id);
+                  if (context.mounted) await showRewards(context, rewards);
+                },
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-          _SupportButton(
-            supported: supported,
-            onPressed: () => content.toggleSupport(place.id),
-          ),
-        ],
+        ),
       ),
     );
   }

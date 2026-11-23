@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../models/dashboard_models.dart';
 import '../providers/content_provider.dart';
+import '../providers/tab_navigator.dart';
 import '../theme/app_theme.dart';
 import '../widgets/place_tile.dart';
 
@@ -18,6 +19,34 @@ class ExploreScreen extends StatefulWidget {
 class _ExploreScreenState extends State<ExploreScreen> {
   GemCategory? _filter; // null means "All"
   String _query = '';
+  final _searchCtrl = TextEditingController();
+  late final TabNavigator _nav;
+
+  @override
+  void initState() {
+    super.initState();
+    _nav = context.read<TabNavigator>();
+    _nav.addListener(_takeSearchFromHome);
+    _takeSearchFromHome();
+  }
+
+  @override
+  void dispose() {
+    _nav.removeListener(_takeSearchFromHome);
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  /// Home's search bar sends its text (and category chip) here.
+  void _takeSearchFromHome() {
+    final search = _nav.takeExploreSearch();
+    if (search == null || !mounted) return;
+    setState(() {
+      _query = search.query;
+      _filter = search.category;
+      _searchCtrl.text = search.query;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +55,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
       final matchesCategory = _filter == null || p.category == _filter;
       final matchesQuery = q.isEmpty ||
           p.name.toLowerCase().contains(q) ||
-          p.blurb.toLowerCase().contains(q);
+          p.blurb.toLowerCase().contains(q) ||
+          p.category.label.toLowerCase().contains(q);
       return matchesCategory && matchesQuery;
     }).toList()
       ..sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
@@ -41,12 +71,27 @@ class _ExploreScreenState extends State<ExploreScreen> {
           ),
           const SizedBox(height: 12),
           TextField(
+            controller: _searchCtrl,
+            textInputAction: TextInputAction.search,
             onChanged: (v) => setState(() => _query = v),
             decoration: const InputDecoration(
               hintText: 'Search places, food, or tags',
               prefixIcon: Icon(Icons.search),
             ),
           ),
+          if (_query.isNotEmpty || _filter != null)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () => setState(() {
+                  _query = '';
+                  _filter = null;
+                  _searchCtrl.clear();
+                }),
+                icon: const Icon(Icons.close, size: 16),
+                label: const Text('Clear search'),
+              ),
+            ),
           const SizedBox(height: 12),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,

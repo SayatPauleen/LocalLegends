@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../data/sample_dashboard_repository.dart';
 import '../providers/auth_provider.dart';
+import '../providers/tab_navigator.dart';
 import '../theme/app_theme.dart';
 import 'collections_screen.dart';
 import 'dashboard_screen.dart';
@@ -20,26 +20,24 @@ class HomeShell extends StatefulWidget {
 }
 
 class _HomeShellState extends State<HomeShell> {
-  int _index = HomeTabs.home;
-  final _data = SampleDashboardRepository().load();
-
-  void _openTab(int index) => setState(() => _index = index);
+  @override
+  void initState() {
+    super.initState();
+    // Every log in starts on Home.
+    context.read<TabNavigator>().reset();
+  }
 
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final nav = context.watch<TabNavigator>();
     final displayName = auth.user?.displayName;
     final userName = (displayName != null && displayName.trim().isNotEmpty)
         ? displayName.trim().split(' ').first
         : (auth.username ?? 'Explorer');
 
     final pages = <Widget>[
-      DashboardScreen(
-        userName: userName,
-        data: _data,
-        onSignOut: auth.signOut,
-        onOpenTab: _openTab,
-      ),
+      DashboardScreen(userName: userName, onSignOut: auth.signOut),
       const ExploreScreen(),
       const MissionsScreen(),
       const CollectionsScreen(),
@@ -47,10 +45,10 @@ class _HomeShellState extends State<HomeShell> {
     ];
 
     return Scaffold(
-      body: IndexedStack(index: _index, children: pages),
+      body: IndexedStack(index: nav.index, children: pages),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: _openTab,
+        selectedIndex: nav.index,
+        onDestinationSelected: nav.open,
         backgroundColor: Colors.white,
         indicatorColor: AppColors.terracotta.withValues(alpha: 0.15),
         destinations: const [
