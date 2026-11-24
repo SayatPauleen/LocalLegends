@@ -15,6 +15,8 @@ class SampleContentRepository {
           distanceKm: 0.6,
           storyCount: 12,
           blurb: 'Lomi since 1998. Ask for extra chicharon.',
+          lat: 13.7590,
+          lng: 121.0610,
         ),
         Place(
           id: 'p2',
@@ -23,6 +25,8 @@ class SampleContentRepository {
           distanceKm: 0.9,
           storyCount: 5,
           blurb: 'Same corner, same tools, three decades.',
+          lat: 13.7540,
+          lng: 121.0550,
         ),
         Place(
           id: 'p3',
@@ -31,6 +35,8 @@ class SampleContentRepository {
           distanceKm: 1.2,
           storyCount: 8,
           blurb: 'Beans from the owner\'s family farm in Lipa.',
+          lat: 13.7610,
+          lng: 121.0570,
         ),
         Place(
           id: 'p4',
@@ -39,6 +45,8 @@ class SampleContentRepository {
           distanceKm: 2.4,
           storyCount: 17,
           blurb: 'Each panel is a different decade of the barangay.',
+          lat: 13.7520,
+          lng: 121.0620,
         ),
         Place(
           id: 'p5',
@@ -47,9 +55,10 @@ class SampleContentRepository {
           distanceKm: 0.4,
           storyCount: 9,
           blurb: 'Three sauces. The spicy one is homemade.',
+          lat: 13.7565,
+          lng: 121.0583,
         ),
       ];
-
   List<Mission> missions() => const [
         Mission(
           id: 'd1',

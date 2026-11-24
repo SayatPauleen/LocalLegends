@@ -9,6 +9,8 @@ class Place {
     required this.distanceKm,
     required this.storyCount,
     required this.blurb,
+    required this.lat,
+    required this.lng,
   });
 
   final String id;
@@ -17,8 +19,9 @@ class Place {
   final double distanceKm;
   final int storyCount;
   final String blurb;
+  final double lat;
+  final double lng;
 }
-
 enum MissionPeriod { daily, weekly }
 
 /// A daily or weekly mission that earns points (revision 2).

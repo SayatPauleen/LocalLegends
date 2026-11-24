@@ -8,6 +8,7 @@ import 'providers/content_provider.dart';
 import 'screens/auth_gate.dart';
 import 'services/auth_service.dart';
 import 'theme/app_theme.dart';
+import 'providers/location_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,6 +18,7 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider(AuthService())),
         ChangeNotifierProvider(create: (_) => ContentProvider()),
+        ChangeNotifierProvider(create: (_) => LocationProvider()..start()),
       ],
       child: const LocalLegendsApp(),
     ),
