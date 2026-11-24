@@ -17,6 +17,17 @@ class Validators {
     return null;
   }
 
+  /// Log-in field: an email if it has an @ after the first character,
+  /// otherwise a username ("@juan" is still a username).
+  static String? usernameOrEmail(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Enter your username or email.';
+    }
+    final v = value.trim();
+    if (v.indexOf('@') > 0) return email(v);
+    return username(v);
+  }
+
   static String? name(String? value) {
     if (value == null || value.trim().isEmpty) return 'Enter your name.';
     if (value.trim().length < 2) return 'Name must be at least 2 characters.';

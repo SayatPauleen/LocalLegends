@@ -52,8 +52,11 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> signIn(String username, String password) {
-    return _run(() => _service.signIn(username: username, password: password));
+  /// Log in with a username or an email.
+  Future<bool> signIn(String usernameOrEmail, String password) {
+    return _run(
+      () => _service.signIn(usernameOrEmail: usernameOrEmail, password: password),
+    );
   }
 
   Future<bool> signUp(String username, String name, String email, String password) {
@@ -70,8 +73,8 @@ class AuthProvider extends ChangeNotifier {
   Future<bool> isUsernameAvailable(String username) =>
       _service.isUsernameAvailable(username);
 
-  Future<bool> sendPasswordReset(String username) {
-    return _run(() => _service.sendPasswordReset(username));
+  Future<bool> sendPasswordReset(String usernameOrEmail) {
+    return _run(() => _service.sendPasswordReset(usernameOrEmail));
   }
 
   Future<void> signOut() => _service.signOut();
@@ -115,7 +118,7 @@ class AuthProvider extends ChangeNotifier {
       case 'user-not-found':
       case 'wrong-password':
       case 'invalid-credential':
-        return 'Incorrect username or password.';
+        return 'Incorrect username, email, or password.';
       case 'email-already-in-use':
         return 'An account with this email already exists. Try logging in.';
       case 'weak-password':

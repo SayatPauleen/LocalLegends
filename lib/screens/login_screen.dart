@@ -15,13 +15,13 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _username = TextEditingController();
+  final _login = TextEditingController(); // username or email
   final _password = TextEditingController();
   bool _hidePassword = true;
 
   @override
   void dispose() {
-    _username.dispose();
+    _login.dispose();
     _password.dispose();
     super.dispose();
   }
@@ -29,19 +29,19 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     // On success, AuthGate switches screens by itself.
-    await context.read<AuthProvider>().signIn(_username.text, _password.text);
+    await context.read<AuthProvider>().signIn(_login.text, _password.text);
   }
 
   Future<void> _forgotPassword() async {
     final messenger = ScaffoldMessenger.of(context);
-    if (Validators.username(_username.text) != null) {
+    if (Validators.usernameOrEmail(_login.text) != null) {
       messenger.showSnackBar(const SnackBar(
-        content: Text('Enter your username first, then tap Forgot password.'),
+        content: Text('Enter your username or email first, then tap Forgot password.'),
       ));
       return;
     }
     final auth = context.read<AuthProvider>();
-    final ok = await auth.sendPasswordReset(_username.text);
+    final ok = await auth.sendPasswordReset(_login.text);
     messenger.showSnackBar(SnackBar(
       content: Text(ok
           ? 'Reset link sent to the email on this account.'
@@ -74,20 +74,25 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 6),
                     const Text(
-                      'Log in with your username to find the hidden gems in your neighborhood.',
+                      'Log in with your username or email to find the hidden gems in your neighborhood.',
                       style: TextStyle(color: AppColors.muted, fontSize: 15),
                     ),
                     const SizedBox(height: 28),
                     TextFormField(
-                      controller: _username,
+                      controller: _login,
                       autocorrect: false,
-                      autofillHints: const [AutofillHints.username],
+                      keyboardType: TextInputType.emailAddress,
+                      autofillHints: const [
+                        AutofillHints.username,
+                        AutofillHints.email,
+                      ],
                       textInputAction: TextInputAction.next,
                       decoration: const InputDecoration(
-                        labelText: 'Username',
-                        prefixText: '@',
+                        labelText: 'Username or email',
+                        hintText: 'juan_explores or juan@mail.com',
+                        prefixIcon: Icon(Icons.person_outline),
                       ),
-                      validator: Validators.username,
+                      validator: Validators.usernameOrEmail,
                       onChanged: (_) => auth.clearError(),
                     ),
                     const SizedBox(height: 16),
