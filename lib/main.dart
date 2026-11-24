@@ -10,6 +10,7 @@ import 'providers/tab_navigator.dart';
 import 'screens/auth_gate.dart';
 import 'services/auth_service.dart';
 import 'theme/app_theme.dart';
+import 'providers/location_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +27,7 @@ Future<void> main() async {
               content!..attachUser(auth.user?.uid, authorNameFor(auth)),
         ),
         ChangeNotifierProvider(create: (_) => TabNavigator()),
+        ChangeNotifierProvider(create: (_) => LocationProvider()..start()),
       ],
       child: const LocalLegendsApp(),
     ),

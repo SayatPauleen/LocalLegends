@@ -11,9 +11,10 @@ import 'reward_dialog.dart';
 /// One place in Explore or Profile > Supported, with a Support toggle
 /// that works like a favorite. Tapping it opens the place page.
 class PlaceTile extends StatelessWidget {
-  const PlaceTile({super.key, required this.place});
+  const PlaceTile({super.key, required this.place, this.distanceKm});
 
   final Place place;
+  final double? distanceKm; // live distance from GPS; falls back to place.distanceKm
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +55,7 @@ class PlaceTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${place.category.label} · ${place.distanceKm.toStringAsFixed(1)} km · ${place.storyCount} stories',
+                      '${place.category.label} · ${(distanceKm ?? place.distanceKm).toStringAsFixed(1)} km · ${place.storyCount} stories',
                       style: const TextStyle(fontSize: 12, color: AppColors.muted),
                     ),
                     const SizedBox(height: 4),
